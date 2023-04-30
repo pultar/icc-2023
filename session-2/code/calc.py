@@ -26,7 +26,6 @@ if not os.path.exists(lib_folder):
 ade.Config.ts_template_folder_path = lib_folder
 print(f"Saving transition state templates in {ade.Config.ts_template_folder_path}")
 
-
 # Set autode methods and get environment variables from calling shell script
 ade.Config.lcode = "xtb"
 ade.Config.hcode = "orca"
