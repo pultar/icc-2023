@@ -17,6 +17,14 @@ rxn_solvent = "SOLVENT_NAME_GOES_HERE"
 rxn_temperature = 298.15
 # -----------------------------------------------------------------------------------------------
 
+# Save templates in home folder, create folder if it does not exist
+home_folder = os.path.expanduser("~")
+lib_folder = os.path.join(home_folder, ".autode")
+if not os.path.exists(lib_folder)
+    os.makedirs(lib_folder)
+    ade.Config.ts_template_folder_path = lib_folder
+    print(f"Saving transition state templates in {ade.Config.ts_template_folder_path")
+
 
 # Set autode methods and get environment variables from calling shell script
 ade.Config.lcode = "xtb"
