@@ -1,9 +1,9 @@
 #!/bin/bash
 
 #################################################################################################
-## Script name : calc.sh                                                                       ##
+## Script name : autode-sample.sh                                                              ##
 ## Description : Submit an autodE calculation as taught in the ICC 2023 course at ETH Zurich   ##
-## Execute     : ./calc.sh                                                                     ##
+## Execute     : ./autode-sample.sh                                                            ##
 ## Author      : Felix Pultar, Eno Paenurk, Patrick Finkelstein                                ##
 ## Datum       : April 17, 2023                                                                ##
 #################################################################################################
