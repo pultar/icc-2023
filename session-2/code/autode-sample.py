@@ -6,7 +6,7 @@ Author: Felix Pultar, Eno Paenurk, Patrick Finkelstein
 Date: April 17, 2023
 """
 
-import icctools
+from icctools import librxn
 
 # -----------------------------------------------------------------------------------------------
 # EDIT THIS SECTION: DEFINE YOUR REACTION
@@ -17,7 +17,7 @@ rxn_temperature = 298.15
 # -----------------------------------------------------------------------------------------------
 
 # Calculate the reaction profile
-rxn = icctools.calculate_reaction_profile(rxn_smiles, rxn_solvent, rxn_temperature, method = icctools.ComputationalMethod.XTB)
+rxn = librxn.calculate_reaction_profile(rxn_smiles, rxn_solvent, rxn_temperature, method = librxn.Method.XTB)
 
 # Print the results
-icctools.print_results(rxn)
+librxn.print_results(rxn)

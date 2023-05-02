@@ -21,7 +21,7 @@ export SCRATCH=50000 # per node!!
 export AUTODE_LOG_LEVEL=INFO # comprehensive logging
 export AUTODE_LOG_FILE=autode.log # name of the log file
 
-# Run the actual job
+# Display resources and run the actual job
 echo "Submitting Slurm job for reaction ${RXN}:"
 echo "${NCORES} cores"
 echo "${MEMORY} MB per CPU memory"

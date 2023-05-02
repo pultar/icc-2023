@@ -16,7 +16,7 @@ from autode.wrappers.keywords import MaxOptCycles
 from enum import Enum
 import os
 
-class ComputationalMethod(Enum):
+class Method(Enum):
     """
     An enum that defines which hmethod will be used
     """
@@ -25,7 +25,7 @@ class ComputationalMethod(Enum):
     B3LYP = 3
     PBE0 = 4
 
-def calculate_reaction_profile(rxn_smiles, rxn_solvent, rxn_temperature, method = ComputationalMethod.BP86):
+def calculate_reaction_profile(rxn_smiles, rxn_solvent, rxn_temperature, method = Method.BP86):
     """
     Calculates a reaction profile and returns the reaction object
     """
@@ -34,25 +34,27 @@ def calculate_reaction_profile(rxn_smiles, rxn_solvent, rxn_temperature, method 
         exit("This example requires an ORCA and XTB install")
 
     # Configure autode
-    setup_template_folder()
+    _setup_template_folder()
+
+    # Read resources from environment
+    n_cores, max_core, rxn_name = _read_environment()
 
     # Set autode methods and get environment variables from calling shell script
     ade.Config.lcode = "xtb"
     ade.Config.hcode = "orca"
-    ade.Config.n_cores = int(os.environ["NCORES"])
-    ade.Config.max_core = int(0.9 * int(os.environ["MEMORY"])) # only use 90% of the memory
-    rxn_name = os.environ["RXN"]
+    ade.Config.n_cores = n_cores
+    ade.Config.max_core = max_core
 
     # Set hmethod
-    if (method == ComputationalMethod.XTB):
-        setup_xtb(rxn_solvent)
+    if (method == Method.XTB):
+        _setup_xtb(rxn_solvent)
         rxn_solvent = None
-    elif (method == ComputationalMethod.BP86):
-        setup_bp86()
-    elif (method == ComputationalMethod.B3LYP):
-        setup_b3lyp()
-    elif (method == ComputationalMethod.PBE0):
-        setup_pbe0()
+    elif (method == Method.BP86):
+        _setup_bp86()
+    elif (method == Method.B3LYP):
+        _setup_b3lyp()
+    elif (method == Method.PBE0):
+        _setup_pbe0()
 
     # Define reaction and calculate profile
     print(f"Using environment variables: {ade.Config.n_cores} cores and {ade.Config.max_core} MB of memory per core for {rxn_name}.")
@@ -73,9 +75,9 @@ def print_results(rxn):
     print("Number of imaginary freq's = ", len(rxn.ts.imaginary_frequencies))
     print("First TS imaginary freq = ", rxn.ts.imaginary_frequencies[0])
 
-def setup_template_folder():
+def _setup_template_folder():
     """
-    Save templates in home folder, create folder if it does not exist
+    Save templates in home folder, create folder if it does not exist. Should not be called directly.
     """
     home_folder = os.path.expanduser("~")
     lib_folder = os.path.join(home_folder, ".icc-2023", "autode-lib")
@@ -84,6 +86,12 @@ def setup_template_folder():
         print(f"Created folder {lib_folder}")
     ade.Config.ts_template_folder_path = lib_folder
     print(f"Saving transition state templates in {ade.Config.ts_template_folder_path}")
+
+def _read_environment():
+    ncores = int(os.environ["NCORES"])
+    max_core = int(0.9 * int(os.environ["MEMORY"])) # only use 90% of the memory
+    rxn_name = os.environ["RXN"]
+    return ncores, max_core, rxn_name
 
 # keywords for optts
 optts_block = (
@@ -95,9 +103,9 @@ optts_block = (
       "end"
     )
 
-def setup_xtb(rxn_solvent):
+def _setup_xtb(rxn_solvent):
     """
-    Sets up keywords required to use xtb as hmethod
+    Sets up keywords required to use xtb as hmethod. Should not be called directly.
     """
     solvent_model = 'ALPB(' + rxn_solvent + ')'
     ade.Config.ORCA.keywords.sp = ['SP', 'XTB2', solvent_model]
@@ -109,9 +117,9 @@ def setup_xtb(rxn_solvent):
     ade.Config.ORCA.keywords.hess = ['Freq', 'XTB2', solvent_model]
     print("Using xTB-GFN2 as hmethod")
 
-def setup_bp86():
+def _setup_bp86():
     """
-    Sets up keywords required to use BP86 as hmethod
+    Sets up keywords required to use BP86 as hmethod. Should not be called directly.
     """
     ade.Config.ORCA.keywords.sp = ['SP', 'BP86', 'RI', def2tzvp, d3bj]
     ade.Config.ORCA.keywords.low_sp = ['SP', 'BP86', 'RI', def2svp, d3bj]
@@ -123,9 +131,9 @@ def setup_bp86():
     ade.Config.ORCA.keywords.ecp = def2ecp
     print("Using BP86 functional as hmethod")
 
-def setup_b3lyp():
+def _setup_b3lyp():
     """
-    Sets up keywords required to use B3LYP as hmethod
+    Sets up keywords required to use B3LYP as hmethod. Should not be called directly.
     """
     ade.Config.ORCA.keywords.sp = ['SP', 'B3LYP', rijcosx, def2tzvp, d3bj]
     ade.Config.ORCA.keywords.low_sp = ['SP', 'B3LYP', rijcosx, def2svp, d3bj]
@@ -137,9 +145,9 @@ def setup_b3lyp():
     ade.Config.ORCA.keywords.ecp = def2ecp
     print("Using B3LYP functional as hmethod")
 
-def setup_pbe0():
+def _setup_pbe0():
     """
-    Sets up keywords required to use PBE0 as hmethod
+    Sets up keywords required to use PBE0 as hmethod. Should not be called directly.
     """
     ade.Config.ORCA.keywords.sp = ['SP', 'PBE0', rijcosx, def2tzvp, d3bj]
     ade.Config.ORCA.keywords.low_sp = ['SP', 'PBE0', rijcosx, def2svp, d3bj]
