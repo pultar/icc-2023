@@ -24,9 +24,10 @@ class Method(Enum):
     An enum that defines which hmethod will be used
     """
     XTB = 1
-    BP86 = 2
-    B3LYP = 3
-    PBE0 = 4
+    R2SCAN3C = 2
+    BP86 = 3
+    B3LYP = 4
+    PBE0 = 5
 
 def calculate_reaction_profile(rxn_smiles, rxn_solvent, rxn_temperature, method = Method.BP86):
     """
@@ -52,6 +53,8 @@ def calculate_reaction_profile(rxn_smiles, rxn_solvent, rxn_temperature, method 
     if (method == Method.XTB):
         _setup_xtb(rxn_solvent)
         rxn_solvent = None
+    elif (method == Method.R2SCAN3C):
+        _setup_r2scan3c()
     elif (method == Method.BP86):
         _setup_bp86()
     elif (method == Method.B3LYP):
@@ -128,6 +131,20 @@ def _setup_xtb(rxn_solvent):
     ade.Config.ORCA.path = orcaxtb_path 
     print("Using xTB-GFN2 as hmethod")
     print(f"Path to ORCA with xTB support: {orcaxtb_path}")
+
+def _setup_r2scan3c():
+    """
+    Sets up keywords required to use r2SCAN-3c as hmethod. Should not be called directly.
+    """
+    ade.Config.ORCA.keywords.sp = ['SP', 'r2SCAN-3c']
+    ade.Config.ORCA.keywords.low_sp = ['SP', 'r2SCAN-3c']
+    ade.Config.ORCA.keywords.opt = ['TightOpt', 'r2SCAN-3c']
+    ade.Config.ORCA.keywords.low_opt = ['LooseOpt', 'r2SCAN-3c', MaxOptCycles(10)]
+    ade.Config.ORCA.keywords.opt_ts = ['OptTS', 'Freq', 'r2SCAN-3c', optts_block]
+    ade.Config.ORCA.keywords.grad = ['EnGrad', 'r2SCAN-3c']
+    ade.Config.ORCA.keywords.hess = ['Freq', 'r2SCAN-3c']
+    ade.Config.ORCA.keywords.ecp = def2ecp
+    print("Using r2SCAN-3c functional as hmethod")
 
 def _setup_bp86():
     """
