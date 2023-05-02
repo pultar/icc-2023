@@ -11,18 +11,19 @@ from autode.wrappers.keywords.basis_sets import (
     def2ecp
 )
 from autode.wrappers.keywords.dispersion import d3bj
-from autode.wrappers.keywords import KeywordsSet, MaxOptCycles
+from autode.wrappers.keywords.ri import rijcosx
+from autode.wrappers.keywords import MaxOptCycles
 from enum import Enum
 import os
 
 class ComputationalMethod(Enum):
     """
-    An enum that defines, which hmethod will be used
+    An enum that defines which hmethod will be used
     """
-    PBE0 = 1
-    XTB = 2
-    BP86 = 3
-    B3LYP = 4
+    XTB = 1
+    BP86 = 2
+    B3LYP = 3
+    PBE0 = 4
 
 def calculate_reaction_profile(rxn_smiles, rxn_solvent, rxn_temperature, method = ComputationalMethod.BP86):
     """
@@ -43,17 +44,18 @@ def calculate_reaction_profile(rxn_smiles, rxn_solvent, rxn_temperature, method 
     rxn_name = os.environ["RXN"]
 
     # Set hmethod
-    if (method == ComputationalMethod.PBE0):
-        setup_pbe0()
-    elif (method == ComputationalMethod.XTB):
-        setup_xtb()
+    if (method == ComputationalMethod.XTB):
+        setup_xtb(rxn_solvent)
+        rxn_solvent = None
     elif (method == ComputationalMethod.BP86):
         setup_bp86()
     elif (method == ComputationalMethod.B3LYP):
         setup_b3lyp()
+    elif (method == ComputationalMethod.PBE0):
+        setup_pbe0()
 
     # Define reaction and calculate profile
-    print(f"Using environment variables: {ade.Config.n_cores} cores and {ade.Config.max_core} memory per core for {rxn_name}.")
+    print(f"Using environment variables: {ade.Config.n_cores} cores and {ade.Config.max_core} MB of memory per core for {rxn_name}.")
     rxn = ade.Reaction(rxn_smiles, name=rxn_name, solvent_name=rxn_solvent, temp=rxn_temperature) 
     rxn.calculate_reaction_profile(free_energy=True)
     return rxn
@@ -83,25 +85,8 @@ def setup_template_folder():
     ade.Config.ts_template_folder_path = lib_folder
     print(f"Saving transition state templates in {ade.Config.ts_template_folder_path}")
 
-def setup_pbe0():
-    """
-    Sets up keywords required to use PBE0 as hmethod
-    """
-    print("Using PBE0 functional as hmethod")
-    pass
-
-def setup_xtb():
-    """
-    Sets up keywords required to use xtb as hmethod
-    """
-    print("Using xtb as hmethod")
-    pass
-
-def setup_bp86():
-    """
-    Sets up keywords required to use BP86 as hmethod
-    """
-    optts_block = (
+# keywords for optts
+optts_block = (
       "\n%geom\n"
       "Calc_Hess true\n"
       "Recalc_Hess 20\n"
@@ -109,13 +94,32 @@ def setup_bp86():
       "MaxIter 100\n"
       "end"
     )
-    ade.Config.ORCA.keywords.low_opt = ['LooseOpt', 'BP86', 'RI', def2svp, d3bj, 'def2/J', MaxOptCycles(10)]
-    ade.Config.ORCA.keywords.grad = ['EnGrad', 'BP86', 'RI', def2svp, d3bj]
+
+def setup_xtb(rxn_solvent):
+    """
+    Sets up keywords required to use xtb as hmethod
+    """
+    solvent_model = 'ALPB(' + rxn_solvent + ')'
+    ade.Config.ORCA.keywords.sp = ['SP', 'XTB2', solvent_model]
+    ade.Config.ORCA.keywords.low_sp = ['SP', 'XTB2', solvent_model]
+    ade.Config.ORCA.keywords.opt = ['TightOpt', 'XTB2', solvent_model]
+    ade.Config.ORCA.keywords.low_opt = ['LooseOpt', 'XTB2', solvent_model, MaxOptCycles(10)]
+    ade.Config.ORCA.keywords.opt_ts = ['OptTS', 'XTB2', solvent_model, optts_block]
+    ade.Config.ORCA.keywords.grad = ['EnGrad', 'XTB2', solvent_model]
+    ade.Config.ORCA.keywords.hess = ['Freq', 'XTB2', solvent_model]
+    print("Using xTB-GFN2 as hmethod")
+
+def setup_bp86():
+    """
+    Sets up keywords required to use BP86 as hmethod
+    """
+    ade.Config.ORCA.keywords.sp = ['SP', 'BP86', 'RI', def2tzvp, d3bj]
     ade.Config.ORCA.keywords.low_sp = ['SP', 'BP86', 'RI', def2svp, d3bj]
     ade.Config.ORCA.keywords.opt = ['TightOpt', 'BP86', 'RI', def2svp, d3bj]
+    ade.Config.ORCA.keywords.low_opt = ['LooseOpt', 'BP86', 'RI', def2svp, d3bj, 'def2/J', MaxOptCycles(10)]
     ade.Config.ORCA.keywords.opt_ts = ['OptTS', 'Freq', 'BP86', 'RI', def2svp, d3bj, optts_block]
+    ade.Config.ORCA.keywords.grad = ['EnGrad', 'BP86', 'RI', def2svp, d3bj]
     ade.Config.ORCA.keywords.hess = ['Freq', 'BP86', 'RI', def2svp, d3bj]
-    ade.Config.ORCA.keywords.sp = ['SP', 'BP86', 'RI', def2tzvp, d3bj]
     ade.Config.ORCA.keywords.ecp = def2ecp
     print("Using BP86 functional as hmethod")
 
@@ -123,5 +127,26 @@ def setup_b3lyp():
     """
     Sets up keywords required to use B3LYP as hmethod
     """
+    ade.Config.ORCA.keywords.sp = ['SP', 'B3LYP', rijcosx, def2tzvp, d3bj]
+    ade.Config.ORCA.keywords.low_sp = ['SP', 'B3LYP', rijcosx, def2svp, d3bj]
+    ade.Config.ORCA.keywords.opt = ['TightOpt', 'B3LYP', rijcosx, def2svp, d3bj]
+    ade.Config.ORCA.keywords.low_opt = ['LooseOpt', 'B3LYP', rijcosx, def2svp, d3bj, 'def2/J', MaxOptCycles(10)]
+    ade.Config.ORCA.keywords.opt_ts = ['OptTS', 'Freq', 'B3LYP', rijcosx, def2svp, d3bj, optts_block]
+    ade.Config.ORCA.keywords.grad = ['EnGrad', 'B3LYP', rijcosx, def2svp, d3bj]
+    ade.Config.ORCA.keywords.hess = ['Freq', 'B3LYP', rijcosx, def2svp, d3bj]
+    ade.Config.ORCA.keywords.ecp = def2ecp
     print("Using B3LYP functional as hmethod")
-    pass
+
+def setup_pbe0():
+    """
+    Sets up keywords required to use PBE0 as hmethod
+    """
+    ade.Config.ORCA.keywords.sp = ['SP', 'PBE0', rijcosx, def2tzvp, d3bj]
+    ade.Config.ORCA.keywords.low_sp = ['SP', 'PBE0', rijcosx, def2svp, d3bj]
+    ade.Config.ORCA.keywords.opt = ['TightOpt', 'PBE0', rijcosx, def2svp, d3bj]
+    ade.Config.ORCA.keywords.low_opt = ['LooseOpt', 'PBE0', rijcosx, def2svp, d3bj, 'def2/J', MaxOptCycles(10)]
+    ade.Config.ORCA.keywords.opt_ts = ['OptTS', 'Freq', 'PBE0', rijcosx, def2svp, d3bj, optts_block]
+    ade.Config.ORCA.keywords.grad = ['EnGrad', 'PBE0', rijcosx, def2svp, d3bj]
+    ade.Config.ORCA.keywords.hess = ['Freq', 'PBE0', rijcosx, def2svp, d3bj]
+    ade.Config.ORCA.keywords.ecp = def2ecp
+    print("Using PBE0 functional as hmethod")

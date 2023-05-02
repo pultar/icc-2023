@@ -22,5 +22,24 @@ export AUTODE_LOG_LEVEL=INFO # comprehensive logging
 export AUTODE_LOG_FILE=autode.log # name of the log file
 
 # Run the actual job
-echo "Submitting Slurm job: ${NCORES} cores, ${MEMORY} MB per CPU memory, ${SCRATCH} MB per node scratch space for reaction ${RXN} (max runtime: ${TIME} h)"
-sbatch -n ${NCORES} --time=${TIME} --job-name="${RXN}" --mem-per-cpu=${MEMORY} --tmp=${SCRATCH} --output="${RXN}-slurm.out" --error="${RXN}-slurm.err" --open-mode=truncate --wrap="python ${RXN}.py > ${RXN}.out"
+echo "Submitting Slurm job for reaction ${RXN}:"
+echo "${NCORES} cores"
+echo "${MEMORY} MB per CPU memory"
+echo "${SCRATCH} MB per node scratch space"
+echo "Max runtime: ${TIME} h"
+
+sbatch <<-script
+#!/bin/bash
+
+#SBATCH --job-name=${RXN}
+#SBATCH -n ${NCORES}
+#SBATCH --mem-per-cpu=${MEMORY}
+#SBATCH --time=${TIME}
+#SBATCH --tmp=${SCRATCH}
+#SBATCH --out=${RXN}-slurm.out
+#SBATCH --error=${RXN}-slurm.err
+#SBATCH --open-mode=truncate 
+
+python ${RXN}.py > ${RXN}.out
+
+script
