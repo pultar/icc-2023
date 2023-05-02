@@ -74,8 +74,10 @@ def calculate_reaction_profile(rxn_obj, rxn_solvent, rxn_temperature, method = M
     # Define reaction and calculate profile
     print(f"Using environment variables: {ade.Config.n_cores} cores and {ade.Config.max_core} MB of memory per core for {rxn_name}.")
     if isinstance(rxn_obj, str): # assume reaction SMILES
+        print("Starting from rxn_smiles")
         rxn = ade.Reaction(rxn_obj, name=rxn_name, solvent_name=rxn_solvent, temp=rxn_temperature) 
     else: # assume autodE reaction
+        print("Starting from autodE reaction object")
         rxn = rxn_obj
     rxn.calculate_reaction_profile(free_energy=True)
     return rxn
