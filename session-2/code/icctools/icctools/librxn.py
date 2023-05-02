@@ -88,6 +88,9 @@ def _setup_template_folder():
     print(f"Saving transition state templates in {ade.Config.ts_template_folder_path}")
 
 def _read_environment():
+    """
+    Reads number of cores, memory, and reaction name from environment
+    """
     ncores = int(os.environ["NCORES"])
     max_core = int(0.9 * int(os.environ["MEMORY"])) # only use 90% of the memory
     rxn_name = os.environ["RXN"]

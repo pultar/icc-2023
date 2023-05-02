@@ -15,7 +15,7 @@ export RXN=reaction_name # enter reaction name here
 export NCORES=8 # how many cores
 export TIME=24:00:00 # how much time for the job
 export MEMORY=2500 # per core !!
-export SCRATCH=50000 # per node!!
+export SCRATCH=10000 # per node!!
 # -----------------------------------------------------------------------------------------------
 
 export AUTODE_LOG_LEVEL=INFO # comprehensive logging
