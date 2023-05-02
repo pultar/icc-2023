@@ -16,9 +16,6 @@ from autode.wrappers.keywords import MaxOptCycles
 from enum import Enum
 import os
 
-def hello():
-    print("Hello librxn")
-
 class Method(Enum):
     """
     An enum that defines which hmethod will be used
