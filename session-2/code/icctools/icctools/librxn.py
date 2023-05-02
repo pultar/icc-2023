@@ -16,6 +16,9 @@ from autode.wrappers.keywords import MaxOptCycles
 from enum import Enum
 import os
 
+def hello():
+    print("Hello librxn")
+
 class Method(Enum):
     """
     An enum that defines which hmethod will be used
@@ -115,10 +118,16 @@ def _setup_xtb(rxn_solvent):
     ade.Config.ORCA.keywords.low_sp = ['SP', 'XTB2', solvent_model]
     ade.Config.ORCA.keywords.opt = ['TightOpt', 'XTB2', solvent_model]
     ade.Config.ORCA.keywords.low_opt = ['LooseOpt', 'XTB2', solvent_model, MaxOptCycles(10)]
-    ade.Config.ORCA.keywords.opt_ts = ['OptTS', 'XTB2', solvent_model, optts_block]
+    ade.Config.ORCA.keywords.opt_ts = ['OptTS', 'XTB2', 'NumFreq', solvent_model, optts_block]
     ade.Config.ORCA.keywords.grad = ['EnGrad', 'XTB2', solvent_model]
-    ade.Config.ORCA.keywords.hess = ['Freq', 'XTB2', solvent_model]
+    ade.Config.ORCA.keywords.hess = ['NumFreq', 'XTB2', solvent_model]
+
+    # symbolic link to ORCA binaries and otool_xtb
+    home_folder = os.path.expanduser("~")
+    orcaxtb_path = os.path.join(home_folder, "orca_with_xtb", "orca")
+    ade.Config.ORCA.path = orcaxtb_path 
     print("Using xTB-GFN2 as hmethod")
+    print(f"Path to ORCA with xTB support: {orcaxtb_path}")
 
 def _setup_bp86():
     """
