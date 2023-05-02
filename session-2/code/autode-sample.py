@@ -17,7 +17,7 @@ rxn_temperature = 298.15
 # -----------------------------------------------------------------------------------------------
 
 # Calculate the reaction profile
-rxn = librxn.calculate_reaction_profile(rxn_smiles, rxn_solvent, rxn_temperature, method = librxn.Method.XTB)
+rxn = librxn.calculate_reaction_profile(rxn_smiles, rxn_solvent, rxn_temperature, method = librxn.Method.BP86)
 
 # Print the results
 librxn.print_results(rxn)

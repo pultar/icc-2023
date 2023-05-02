@@ -13,6 +13,7 @@ from autode.wrappers.keywords.basis_sets import (
 from autode.wrappers.keywords.dispersion import d3bj
 from autode.wrappers.keywords.ri import rijcosx
 from autode.wrappers.keywords import MaxOptCycles
+from autode.reactions.reaction import Reaction
 from enum import Enum
 import os
 
@@ -26,10 +27,21 @@ class Method(Enum):
     B3LYP = 4
     PBE0 = 5
 
-def calculate_reaction_profile(rxn_smiles, rxn_solvent, rxn_temperature, method = Method.BP86):
+def calculate_reaction_profile(rxn_obj, rxn_solvent, rxn_temperature, method = Method.BP86):
+    """Calculates a reaction profile and returns the reaction object
+
+    Args:
+        rxn_smiles: reaction identifier, can be a rxn_smiles (str) or autodE Reaction object
+        rxn_solvent: solvent of the reaction
+        rxn_temperature: temperature of the reaction in Kelvin
+        method (optional): computational method (e.g. functional). Defaults to Method.BP86.
+
+    Returns:
+        Returns the reaction after the profile has been calculated
     """
-    Calculates a reaction profile and returns the reaction object
-    """
+    # Check type is valid
+    assert(isinstance(rxn_obj, str) or isinstance(rxn_obj, Reaction), f"rxn_object must be a reaction SMILES or an autodE reaction object but was {type(rxn_obj)}")
+
     # Check if modules have been loaded and debug resources from environment
     if not ade.methods.ORCA().is_available and ade.methods.XTB().is_available:
         exit("This example requires an ORCA and XTB install")
@@ -61,13 +73,18 @@ def calculate_reaction_profile(rxn_smiles, rxn_solvent, rxn_temperature, method 
 
     # Define reaction and calculate profile
     print(f"Using environment variables: {ade.Config.n_cores} cores and {ade.Config.max_core} MB of memory per core for {rxn_name}.")
-    rxn = ade.Reaction(rxn_smiles, name=rxn_name, solvent_name=rxn_solvent, temp=rxn_temperature) 
+    if isinstance(rxn_obj, str): # assume reaction SMILES
+        rxn = ade.Reaction(rxn_obj, name=rxn_name, solvent_name=rxn_solvent, temp=rxn_temperature) 
+    else: # assume autodE reaction
+        rxn = rxn_obj
     rxn.calculate_reaction_profile(free_energy=True)
     return rxn
 
 def print_results(rxn):
-    """
-    Outputs electronic energy, enthalpy, Gibbs free energy, and imaginary frequency information
+    """Outputs electronic energy, enthalpy, Gibbs free energy, and imaginary frequency information
+
+    Args:
+        rxn: A completed autodE reaction
     """
     print("∆E_r (kcal mol-1) = ", rxn.delta("E").to("kcal mol-1"))
     print("∆E‡ (kcal mol-1)  = ", rxn.delta("E‡").to("kcal mol-1"))
@@ -110,8 +127,10 @@ optts_block = (
     )
 
 def _setup_xtb(rxn_solvent):
-    """
-    Sets up keywords required to use xtb as hmethod. Should not be called directly.
+    """Sets up keywords required to use xtb as hmethod. Should not be called directly.
+
+    Args:
+        rxn_solvent: The reaction solvent string
     """
     solvent_model = 'ALPB(' + rxn_solvent + ')'
     ade.Config.ORCA.keywords.sp = ['SP', 'XTB2', solvent_model]

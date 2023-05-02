@@ -1,5 +1,6 @@
 # icctools
-This package provides functions to easily set up QM calculations
+
+This package is part of the course `Introduction to Computational Chemistry` taught at ETH Zurich in 2023. The package provides functions to easily set up QM calculations.
 
 # Installation
 
