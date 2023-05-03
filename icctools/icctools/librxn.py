@@ -27,13 +27,16 @@ class Method(Enum):
     B3LYP = 4
     PBE0 = 5
 
-def calculate_reaction_profile(rxn_obj, rxn_solvent, rxn_temperature, method = Method.BP86):
+def calculate_reaction_profile(rxn_obj, rxn_solvent, rxn_temperature, rxn_name, n_cores = 4, max_core = 1024, method = Method.BP86):
     """Calculates a reaction profile and returns the reaction object
 
     Args:
-        rxn_smiles: reaction identifier, can be a rxn_smiles (str) or autodE Reaction object
+        rxn_obj: reaction identifier, can be a rxn_smiles (str) or autodE Reaction object
         rxn_solvent: solvent of the reaction
         rxn_temperature: temperature of the reaction in Kelvin
+        rxn_name: reaction name (str)
+        n_cores: number of cores
+        max_core: memory per core in MB
         method (optional): computational method (e.g. functional). Defaults to Method.BP86.
 
     Returns:
@@ -44,13 +47,10 @@ def calculate_reaction_profile(rxn_obj, rxn_solvent, rxn_temperature, method = M
 
     # Check if modules have been loaded and debug resources from environment
     if not ade.methods.ORCA().is_available and ade.methods.XTB().is_available:
-        exit("This example requires an ORCA and XTB install")
+        exit("This script requires that ORCA and xtb are available")
 
     # Configure autode
     _setup_template_folder()
-
-    # Read resources from environment
-    n_cores, max_core, rxn_name = _read_environment()
 
     # Set autode methods and get environment variables from calling shell script
     ade.Config.lcode = "xtb"
@@ -72,7 +72,7 @@ def calculate_reaction_profile(rxn_obj, rxn_solvent, rxn_temperature, method = M
         _setup_pbe0()
 
     # Define reaction and calculate profile
-    print(f"Using environment variables: {ade.Config.n_cores} cores and {ade.Config.max_core} MB of memory per core for {rxn_name}.")
+    print(f"Using {ade.Config.n_cores} cores and {ade.Config.max_core} MB of memory per core for {rxn_name}.")
     if isinstance(rxn_obj, str): # assume reaction SMILES
         print("Starting from rxn_smiles")
         rxn = ade.Reaction(rxn_obj, name=rxn_name, solvent_name=rxn_solvent, temp=rxn_temperature) 
@@ -88,14 +88,21 @@ def print_results(rxn):
     Args:
         rxn: A completed autodE reaction
     """
-    print("∆E_r (kcal mol-1) = ", rxn.delta("E").to("kcal mol-1"))
-    print("∆E‡ (kcal mol-1)  = ", rxn.delta("E‡").to("kcal mol-1"))
-    print("∆H_r (kcal mol-1) = ", rxn.delta("H").to("kcal mol-1"))
-    print("∆H‡ (kcal mol-1)  = ", rxn.delta("H‡").to("kcal mol-1"))
-    print("∆G_r (kcal mol-1) = ", rxn.delta("G").to("kcal mol-1"))
-    print("∆G‡ (kcal mol-1)  = ", rxn.delta("G‡").to("kcal mol-1"))
-    print("Number of imaginary freq's = ", len(rxn.ts.imaginary_frequencies))
-    print("First TS imaginary freq = ", rxn.ts.imaginary_frequencies[0])
+    print('-'*40)
+    print("Energies")
+    print('-'*40)
+    print("∆E_r (kcal mol-1) = %-8.2f" % (rxn.delta("E").to("kcal mol-1")))
+    print("∆E‡ (kcal mol-1)  = %-8.2f" % (rxn.delta("E‡").to("kcal mol-1")))
+    print("∆H_r (kcal mol-1) = %-8.2f" % (rxn.delta("H").to("kcal mol-1")))
+    print("∆H‡ (kcal mol-1)  = %-8.2f" % (rxn.delta("H‡").to("kcal mol-1")))
+    print("∆G_r (kcal mol-1) = %-8.2f" % (rxn.delta("G").to("kcal mol-1")))
+    print("∆G‡ (kcal mol-1)  = %-8.2f" % (rxn.delta("G‡").to("kcal mol-1")))
+    print('-'*40)
+    print("TS info")
+    print('-'*40)
+    print("Number of imaginary freqs   = %-2i" % (len(rxn.ts.imaginary_frequencies)))
+    print("First imaginary freq (cm-1) = %-8.1f" % (rxn.ts.imaginary_frequencies[0]))
+
 
 def _setup_template_folder():
     """
@@ -108,15 +115,6 @@ def _setup_template_folder():
         print(f"Created folder {lib_folder}")
     ade.Config.ts_template_folder_path = lib_folder
     print(f"Saving transition state templates in {ade.Config.ts_template_folder_path}")
-
-def _read_environment():
-    """
-    Reads number of cores, memory, and reaction name from environment
-    """
-    ncores = int(os.environ["NCORES"])
-    max_core = int(0.9 * int(os.environ["MEMORY"])) # only use 90% of the memory
-    rxn_name = os.environ["RXN"]
-    return ncores, max_core, rxn_name
 
 # keywords for optts
 optts_block = (
@@ -145,7 +143,7 @@ def _setup_xtb(rxn_solvent):
 
     # symbolic link to ORCA binaries and otool_xtb
     home_folder = os.path.expanduser("~")
-    orcaxtb_path = os.path.join(home_folder, "orca_with_xtb", "orca")
+    orcaxtb_path = os.path.join(home_folder, "bin/orca_with_xtb", "orca")
     ade.Config.ORCA.path = orcaxtb_path 
     print("Using xTB-GFN2 as hmethod")
     print(f"Path to ORCA with xTB support: {orcaxtb_path}")
