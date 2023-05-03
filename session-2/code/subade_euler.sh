@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Bash script for submitting autodE scripts (ICC 2023 format) to Slurm (grace version)
+# Bash script for submitting autodE scripts (ICC 2023 format) to Slurm (euler version)
 # run subade for help message
 
 readonly ARGS="$@"
@@ -8,14 +8,14 @@ readonly ARGS="$@"
 function get_args () {
     # Set up default parameter
     walltime=4 # wall time in h
-    partition='day' # partition name
+    scr=10000 # scratch space in MB
 
     # Parse the arguments
-    local OPTIND OPTARG flag t p
-    while getopts ':t:p:' flag; do
+    local OPTIND OPTARG flag t r
+    while getopts ':t:r:' flag; do
         case $flag in
             t) walltime=${OPTARG};;
-            p) partition=${OPTARG};;
+            r) scr=${OPTARG};;
             *)
               usage
               exit
@@ -27,8 +27,8 @@ function get_args () {
 
 # print usage
 function usage () {
-    echo "  subade.sh [-t time_in_h] [-p partition_name] rxn_script.py"
-    echo "  (default parameters are 4 h run time and day partition)"
+    echo "  subade.sh [-t time_in_h] [-r scratch_space_in_MB] rxn_script.py"
+    echo "  (default parameters are 4 h run time and 10000 MB scratch space)"
 }
 
 # main function
@@ -73,7 +73,7 @@ sbatch <<-script
 #SBATCH -n $ncore
 #SBATCH --mem-per-cpu=$mem
 #SBATCH --time=$walltime:00:00
-#SBATCH --partition=$partition
+#SBATCH --tmp=$scr
 #SBATCH --out=${fpath/.py/.out}
 #SBATCH --error=${fpath/.py/.err}
 
@@ -89,7 +89,7 @@ if main; then
     echo "Cores:" $ncore
     echo "Time (hours):" $walltime:00
     echo "Memory (MB per core):" $mem "(scaled 1.1x)"
-    echo "Partition:" $partition
+    echo "Scratch space (MB):" $scr
     echo "Script file:" $fpath
 else
     echo "Submission failed"

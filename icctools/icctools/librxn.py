@@ -43,7 +43,7 @@ def calculate_reaction_profile(rxn_obj, rxn_solvent, rxn_temperature, rxn_name, 
         Returns the reaction after the profile has been calculated
     """
     # Check type is valid
-    assert(isinstance(rxn_obj, str) or isinstance(rxn_obj, Reaction), f"rxn_object must be a reaction SMILES or an autodE reaction object but was {type(rxn_obj)}")
+    assert isinstance(rxn_obj, str) or isinstance(rxn_obj, Reaction), f"rxn_object must be a reaction SMILES or an autodE reaction object but was {type(rxn_obj)}"
 
     # Check if modules have been loaded and debug resources from environment
     if not ade.methods.ORCA().is_available and ade.methods.XTB().is_available:
@@ -72,10 +72,10 @@ def calculate_reaction_profile(rxn_obj, rxn_solvent, rxn_temperature, rxn_name, 
         _setup_pbe0()
 
     # Define reaction and calculate profile
-    print(f"Using {ade.Config.n_cores} cores and {ade.Config.max_core} MB of memory per core for {rxn_name}.")
+    print(f"Using {ade.Config.n_cores} cores and {int(ade.Config.max_core)} MB of memory per core for {rxn_name}.")
     if isinstance(rxn_obj, str): # assume reaction SMILES
-        print("Starting from rxn_smiles")
-        rxn = ade.Reaction(rxn_obj, name=rxn_name, solvent_name=rxn_solvent, temp=rxn_temperature) 
+        print("Starting from SMILES")
+        rxn = ade.Reaction(rxn_obj, name=rxn_name, solvent_name=rxn_solvent, temp=rxn_temperature)
     else: # assume autodE reaction
         print("Starting from autodE reaction object")
         rxn = rxn_obj
