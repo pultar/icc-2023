@@ -70,7 +70,8 @@ sbatch <<-script
 #!/bin/bash
 
 #SBATCH --job-name=$name
-#SBATCH -n $ncore
+#SBATCH --ntasks=$ncore
+#SBATCH --nodes=1
 #SBATCH --mem-per-cpu=$mem
 #SBATCH --time=$walltime:00:00
 #SBATCH --partition=$partition
