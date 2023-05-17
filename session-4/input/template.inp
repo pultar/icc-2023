@@ -1,0 +1,41 @@
+#ORCA 5.0.3 input template: For every block, simply uncomment (remove the hashtag) for the options you want to use
+
+#Functionals: BP86 (quick and cheap method), B3LYP (more accurate method for organic systems), PBE0 (more accurate method for organometallic systems)
+#! BP86
+#! PBE0
+#! B3LYP
+
+#Basis set: def2-SVP (quick, good for quick optimizations), def2-TZVP (more accurate for optimizations, good for single points), def2-QZVPP (accurate for single points)
+#! def2-SVP
+#! def2-TZVP
+#! def2-QZVPP
+
+# Dispersion correction: this should always be on
+! D3BJ
+
+# Solvent model, default: water (uncomment the next line to activate), replace solvent name if required
+#! CPCM(water)
+
+# Uncomment the 4 lines below for the SMD model (for water), replace solvent name if required. If you want to use SMD within a frequency calculation, change Freq to Numfreq.
+#%cpcm
+# smd true
+# SMDsolvent "water"
+#end
+
+# Job type: for single point calculations leave all lines commented. 
+#! Opt
+#! Freq
+#! Opt Freq
+#! OptTS Freq
+#! IRC
+
+# Print level: switch this on if you want less output printed
+#! MiniPrint
+
+# Number of processors: adjust if neccessary
+%pal nprocs 4 end
+# RAM per processor: adjust if neccessary
+%maxcore 2048
+
+# Charge, multiplicity and xyz file
+*xyzfile 0 1 xyzfile.xyz
