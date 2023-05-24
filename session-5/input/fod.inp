@@ -1,0 +1,12 @@
+# ORCA 5 input for FOD
+
+# Ask for fractional orbital density calculation
+! FOD
+
+# Number of processors: adjust if neccessary
+%pal nprocs 4 end
+# RAM per processor: adjust if neccessary
+%maxcore 2048
+
+# Charge, multiplicity and xyz file
+*xyzfile 0 1 xyzfile.xyz
