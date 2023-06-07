@@ -82,7 +82,7 @@ function main () {
 #SBATCH --out=${fpath/.inp/.out}
 #SBATCH --error=${fpath/.inp/.err}
 
-"$orca_path" "$fpath"
+"$orca_path" "$filename"
 
 script
 }
